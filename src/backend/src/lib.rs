@@ -1,20 +1,24 @@
 use candid::{candid_method, export_service};
 use ic_cdk_macros::{init, post_upgrade, pre_upgrade, query, update};
 use ic_stable_memory::{
+    collections::{hash_map::SHashMap, vec::SVec},
     s, stable_memory_init, stable_memory_post_upgrade, stable_memory_pre_upgrade,
+    utils::ic_types::SPrincipal,
 };
 
 #[cfg(test)]
 mod test;
 
-type MyStrings = Vec<String>;
+type MyPrincipalVec = SVec<SPrincipal>;
+type MyPrincipalMap = SHashMap<SPrincipal, SPrincipal>;
 
 #[init]
 fn init() {
     stable_memory_init(true, 0);
 
     // create the stable variable
-    s! { MyStrings = MyStrings::new() };
+    s! { MyPrincipalVec = MyPrincipalVec::new() };
+    s! { MyPrincipalMap = MyPrincipalMap::new_with_capacity(200_000) };
 }
 
 #[pre_upgrade]
@@ -29,17 +33,40 @@ fn post_upgrade() {
 
 #[query]
 #[candid_method(query)]
-fn get_my_strings() -> MyStrings {
-    s!(MyStrings)
+fn get_my_strings_vec() -> Vec<SPrincipal> {
+    let entire_vector = s!(MyPrincipalVec);
+
+    let mut result: Vec<SPrincipal> = Vec::new();
+
+    for index in 0..entire_vector.len() {
+        result.push(entire_vector.get_cloned(index).unwrap());
+    }
+
+    result
+}
+
+#[query]
+#[candid_method(query)]
+fn get_my_strings_map() -> SPrincipal {
+    let entire_map = s!(MyPrincipalMap);
+
+    entire_map
+        .get_cloned(&SPrincipal(ic_cdk::caller()))
+        .unwrap()
 }
 
 #[update]
 #[candid_method(update)]
-fn add_my_string(entry: String) {
-    let mut my_strings = s!(MyStrings);
-    my_strings.push(entry);
+fn add_my_principal() {
+    let my_principal = SPrincipal(ic_cdk::caller());
 
-    s! { MyStrings = my_strings };
+    let mut my_principal_vector = s!(MyPrincipalVec);
+    my_principal_vector.push(&my_principal);
+    s! { MyPrincipalVec = my_principal_vector };
+
+    let mut my_principal_map = s!(MyPrincipalMap);
+    my_principal_map.insert(my_principal, &my_principal);
+    s! {MyPrincipalMap = my_principal_map};
 }
 
 #[query(name = "__get_candid_interface_tmp_hack")]

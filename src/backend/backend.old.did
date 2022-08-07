@@ -1,0 +1,4 @@
+service : {
+  add_my_string : (text) -> ();
+  get_my_strings : () -> (vec text) query;
+}
