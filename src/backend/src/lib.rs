@@ -47,12 +47,10 @@ fn get_my_strings_vec() -> Vec<SPrincipal> {
 
 #[query]
 #[candid_method(query)]
-fn get_my_strings_map() -> SPrincipal {
+fn get_my_strings_map() -> Option<SPrincipal> {
     let entire_map = s!(MyPrincipalMap);
 
-    entire_map
-        .get_cloned(&SPrincipal(ic_cdk::caller()))
-        .unwrap()
+    entire_map.get_cloned(&SPrincipal(ic_cdk::caller()))
 }
 
 #[update]

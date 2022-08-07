@@ -1,4 +1,5 @@
 service : {
-  add_my_string : (text) -> ();
-  get_my_strings : () -> (vec text) query;
+  add_my_principal : () -> ();
+  get_my_strings_map : () -> (opt principal) query;
+  get_my_strings_vec : () -> (vec principal) query;
 }
