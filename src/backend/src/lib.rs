@@ -11,6 +11,7 @@ mod test;
 
 type MyPrincipalVec = SVec<SPrincipal>;
 type MyPrincipalMap = SHashMap<SPrincipal, SPrincipal>;
+type MyOwnStringMap = SHashMap<String, String>;
 
 #[init]
 fn init() {
@@ -19,6 +20,7 @@ fn init() {
     // create the stable variable
     s! { MyPrincipalVec = MyPrincipalVec::new() };
     s! { MyPrincipalMap = MyPrincipalMap::new_with_capacity(200_000) };
+    s! { MyOwnStringMap = MyOwnStringMap::new_with_capacity(200_000) };
 }
 
 #[pre_upgrade]
@@ -33,7 +35,7 @@ fn post_upgrade() {
 
 #[query]
 #[candid_method(query)]
-fn get_my_strings_vec() -> Vec<SPrincipal> {
+fn get_my_principal_vec() -> Vec<SPrincipal> {
     let entire_vector = s!(MyPrincipalVec);
 
     let mut result: Vec<SPrincipal> = Vec::new();
@@ -47,7 +49,7 @@ fn get_my_strings_vec() -> Vec<SPrincipal> {
 
 #[query]
 #[candid_method(query)]
-fn get_my_strings_map() -> Option<SPrincipal> {
+fn get_my_principal_map() -> Option<SPrincipal> {
     let entire_map = s!(MyPrincipalMap);
 
     entire_map.get_cloned(&SPrincipal(ic_cdk::caller()))
@@ -65,6 +67,22 @@ fn add_my_principal() {
     let mut my_principal_map = s!(MyPrincipalMap);
     my_principal_map.insert(my_principal, &my_principal);
     s! {MyPrincipalMap = my_principal_map};
+}
+
+#[query]
+#[candid_method(query)]
+fn get_my_string_map(some_text: String) -> Option<String> {
+    let entire_map = s!(MyOwnStringMap);
+
+    entire_map.get_cloned(&some_text)
+}
+
+#[update]
+#[candid_method(update)]
+fn add_my_string(my_string: String) {
+    let mut my_string_map = s!(MyOwnStringMap);
+    my_string_map.insert(my_string.clone(), &my_string);
+    s! {MyOwnStringMap = my_string_map};
 }
 
 #[query(name = "__get_candid_interface_tmp_hack")]

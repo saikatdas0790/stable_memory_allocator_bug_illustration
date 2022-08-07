@@ -6,3 +6,4 @@
 - Run one of the query methods. No issues
 - Run the update method to insert SPrincipal into stable collections
 - Run the query method again. Error
+- Try the separate methods for `String` type which has no issues running
